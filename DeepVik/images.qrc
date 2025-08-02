@@ -4,5 +4,7 @@
         <file>img/piece_B.png</file>
         <file>img/piece_W.png</file>
         <file>img/W.png</file>
+        <file>img/king_B.png</file>
+        <file>img/king_W.png</file>
     </qresource>
 </RCC>

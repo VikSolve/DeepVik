@@ -10,10 +10,14 @@ CONFIG += c++17
 
 SOURCES += \
     main.cpp \
-    deepvik.cpp
+    deepvik.cpp \
+    src/myBot.cpp \
+    src/moveGenerator.cpp
 
 HEADERS += \
-    deepvik.h
+    deepvik.h \
+    src/myBot.h \
+    src/moveGenerator.h
 
 FORMS += \
     deepvik.ui
