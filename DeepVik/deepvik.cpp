@@ -40,7 +40,6 @@ string translateTile(int tile){
 }
 int numToTile(string x){
     int res = ((x[1] - '1') * 4) + ((x[0] - 'A') >> 1);
-    qDebug() << x[0] << " " << x[1] <<"\n";
     return res;
 }
 void deepvik::handleTileClicked()
@@ -49,6 +48,9 @@ void deepvik::handleTileClicked()
     QPushButton* clicked = qobject_cast<QPushButton*>(sender());
     if (!clicked) return;
     Freeze = true;
+    for(uint32_t i = 0; i < 32; i++){
+        tiles[i] -> setCursor(Qt::ArrowCursor);
+    }
     int idx = 0;
     for (int i = 0; i < 32; i++) {
         if (tiles[i] == clicked) {
@@ -71,7 +73,12 @@ void deepvik::handleTileClicked()
         legalMoves.clear();
         userInput = "";
         refresh();
-        string myBotAnswer = BestMove(gameState, true);
+        if(generateMoves(gameState, true).empty()){
+            QMessageBox::about(this, "END", "You won!");
+            Freeze = true;
+            return;
+        }
+        string myBotAnswer = BestMove(gameState, DIFFICULTY, true);
         for(int i = 0; i < (int)myBotAnswer.size() - 2; i += 2){
             make_move_from_string(gameState, myBotAnswer.substr(i, 4));
             wait(250);
@@ -79,6 +86,11 @@ void deepvik::handleTileClicked()
             int nr = numToTile(myBotAnswer.substr(i + 2, 2));
             tiles[nr] -> setStyleSheet("border: 3px solid blue;");
             tiles[nr] -> setIconSize(QSize(77, 77));
+        }
+        if(generateMoves(gameState, false).empty()){
+            QMessageBox::about(this, "END", "You lost!");
+            Freeze = true;
+            return;
         }
     }
     else{
@@ -99,23 +111,63 @@ void deepvik::handleTileClicked()
         }
         else{
             if(userInput.size() >= 6) userInput.resize(userInput.size() - 2);
-            else userInput = "";
-            refresh();
+            else{
+                userInput = "";
+                refresh();
+            }
             QMessageBox::about(this, "ERROR", "Incorrect move!");
         }
     }
 
 
     Freeze = false;
+    for(uint32_t i = 0; i < 32; i++){
+        tiles[i] -> setCursor(Qt::PointingHandCursor);
+    }
+
 }
 
 void deepvik::on_newGameButton_clicked()
 {
+
+    QDialog dialog(this);
+    dialog.setWindowTitle("Select depth");
+
+    QVBoxLayout layout(&dialog);
+
+    QSlider slider(Qt::Horizontal);
+    slider.setRange(1, 11);
+    slider.setValue(1);
+
+    QLabel label("Depth: 1");
+    label.setAlignment(Qt::AlignCenter);
+
+    layout.addWidget(&slider);
+    layout.addWidget(&label);
+
+    QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dialog);
+    layout.addWidget(&buttonBox);
+
+    QObject::connect(&slider, &QSlider::valueChanged, [&label](int v){
+        label.setText(v == 11 ? "Depth: Unlimited" : QString("Depth: %1").arg(v));
+    });
+    QObject::connect(&buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    QObject::connect(&buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+
+    if(dialog.exec() != QDialog::Accepted) {
+        return;
+    }
+    DIFFICULTY = slider.value();
+    if(DIFFICULTY == 11) DIFFICULTY = 60;
+    ui->label->setText(QString("DEPTH: %1").arg(DIFFICULTY));
     gameState.reset();
     refresh();
     Freeze = false;
     legalMoves.clear();
     userInput = "";
+    for(uint32_t i = 0; i < 32; i++){
+        tiles[i] -> setCursor(Qt::PointingHandCursor);
+    }
 }
 array<int, 32> getBoard(const Game &curr){
     array<int, 32> res;

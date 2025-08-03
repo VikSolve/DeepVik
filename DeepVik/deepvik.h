@@ -6,6 +6,10 @@
 #include <QTimer>
 #include <QMessageBox>
 #include <QGraphicsDropShadowEffect>
+#include <QSlider>
+#include <QLabel>
+#include <QDialog>
+#include <QVBoxLayout>
 #include "src/myBot.h"
 #include "src/moveGenerator.h"
 
@@ -33,6 +37,7 @@ private:
     Ui::deepvik *ui;
     bool Freeze;
     int gameType;
+    int DIFFICULTY;
     string userInput;
     Game gameState;
     vector<string> legalMoves;

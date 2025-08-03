@@ -20,9 +20,14 @@ void Game::reset(){
     black_pawn = 0x00000FFF;
     //red_pawn = (1 << 12) | (1 << 21);
     red_pawn = 0xFFF00000;
+    tt.clear();
 }
 
 FastTT::FastTT() {
+    table.resize(TABLE_SIZE);
+}
+void FastTT::clear(){
+    table.clear();
     table.resize(TABLE_SIZE);
 }
 
@@ -48,7 +53,7 @@ string move_recovery(const Game &state, bool my_color){
     return res;
 }
 
-string BestMove(Game &state, bool my_color){
+string BestMove(Game &state, int depthLimit, bool my_color){
     t0 = getRTime();
     string answer = "";
     stop_iterating = false;
@@ -56,7 +61,7 @@ string BestMove(Game &state, bool my_color){
         killerMove[i][0] = killerMove[i + 2][0];
         killerMove[i][1] = killerMove[i + 2][1];
     }
-    for(int32_t i = 2; i <= 60; i++){
+    for(int32_t i = 1; i <= depthLimit; i++){
         saved[11] = 0;
         tt.delete_root(state, my_color);
         buff[11] = 0;

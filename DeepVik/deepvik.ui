@@ -1051,6 +1051,19 @@
      <string>NewGame</string>
     </property>
    </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>850</x>
+      <y>320</y>
+      <width>211</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>DEPTH: 0</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -1065,10 +1078,16 @@
     <property name="title">
      <string>Info</string>
     </property>
+    <addaction name="actionAutor"/>
    </widget>
    <addaction name="menuInfo"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionAutor">
+   <property name="text">
+    <string>viksolve.pl</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>

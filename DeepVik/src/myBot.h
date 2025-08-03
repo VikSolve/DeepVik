@@ -71,6 +71,7 @@ public:
     INLINE Node find(const Game &g, bool tura) const;
     INLINE void insert(const Game &g, uint8_t depth, int16_t score, uint16_t hashMove, uint8_t flag, bool tura);
     void delete_root(const Game &g, bool tura);
+    void clear();
 };
 
 
@@ -84,7 +85,7 @@ extern uint16_t timeCount;
 extern uint16_t killerMove[60][2];
 
 string move_recovery(const Game &state, bool my_color);
-string BestMove(Game &state, bool my_color);
+string BestMove(Game &state, int depthLimit, bool my_color);
 void update_board(Game &state, vector<string> &board);
 template<bool Tura> int16_t dfs(const Game &state, uint8_t depth, int16_t alpha, int16_t beta);
 template<bool Tura, bool King> int16_t dfs_pom(const Game &state, uint8_t depth, uint32_t nr, int16_t alpha, int16_t beta);
@@ -187,7 +188,6 @@ INLINE void FastTT::insert(const Game &g, uint8_t depth, int16_t score, uint16_t
 
 template<bool Tura, bool King>
 int16_t dfs_pom(const Game &state, uint8_t depth, uint32_t nr, int16_t alpha, int16_t beta){
-    // ... całe ciało funkcji dfs_pom ...
     if(UNLIKELY(depth == 0)){
         buff[buff[11]++] = nr;
     }
@@ -423,7 +423,6 @@ int16_t dfs_pom(const Game &state, uint8_t depth, uint32_t nr, int16_t alpha, in
 
 template<bool Tura>
 INLINE bool applyKillerMove(Game temp, uint32_t all, int16_t &res, int16_t &alpha, int16_t &beta, uint8_t depth, uint16_t &hashMove){
-    // ... całe ciało funkcji applyKillerMove ...
     uint16_t killmove = killerMove[depth][0];
     if constexpr(!Tura){
         if(killmove && killmove != hashMove){
@@ -573,7 +572,7 @@ int16_t dfs(const Game &state, uint8_t depth, int16_t alpha, int16_t beta){
     timeCount++;
     if(UNLIKELY((timeCount & 127) == 0)){
         uint64_t t1 = getRTime();
-        if(UNLIKELY(t1 - t0 > 97000)){
+        if(UNLIKELY(t1 - t0 > 97500)){
             int ms = (t1 - t0)/1000;
             cerr << "Czas: " << ms << " ms, MAX_DEPTH = "<<(int)MAX_DEPTH-1<<"\n";
             stop_iterating = true;
