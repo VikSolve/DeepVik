@@ -10,6 +10,7 @@
 #include <QLabel>
 #include <QDialog>
 #include <QVBoxLayout>
+#include <QInputDialog>
 #include "src/myBot.h"
 #include "src/moveGenerator.h"
 
@@ -40,6 +41,7 @@ private:
     void handleTileClicked();
     void refresh();
     void changeCursor(bool type);
+    void endGame();
     QPushButton* blackTiles[32];
     QPushButton* whiteTiles[32];
     Ui::deepvik *ui;
@@ -47,6 +49,7 @@ private:
     int gameType;
     int DIFFICULTY;
     bool COLOR;
+    bool INVERTED;
     string userInput;
     Game gameState;
     vector<string> legalMoves;

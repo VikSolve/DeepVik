@@ -27,6 +27,12 @@ deepvik::deepvik(QWidget *parent)
     ui -> surrenderButton -> setCursor(Qt::PointingHandCursor);
     ui -> rotateButton -> setCursor(Qt::PointingHandCursor);
     ui -> selectColorButton -> setCursor(Qt::PointingHandCursor);
+
+    ui -> evalBar -> setOrientation(Qt::Vertical);
+    ui->evalBar->setRange(0, 600);
+    ui->evalBar->setValue(300);
+    ui->evalBar->setAlignment(Qt::AlignCenter);
+    INVERTED = false;
 }
 
 deepvik::~deepvik()
@@ -84,11 +90,11 @@ void deepvik::handleTileClicked()
         refresh();
         if(generateMoves(gameState, !COLOR).empty()){
             QMessageBox::about(this, "END", "You won!");
-            changeCursor(false);
-            Freeze = true;
+            endGame();
             return;
         }
-        string myBotAnswer = BestMove(gameState, DIFFICULTY, !COLOR);
+        auto [evalAnswer, myBotAnswer] = BestMove(gameState, DIFFICULTY, !COLOR);
+        ui -> evalBar -> setValue(clamp(evalAnswer * 3 + 300, 0, 600));
         for(int i = 0; i < (int)myBotAnswer.size() - 2; i += 2){
             make_move_from_string(gameState, myBotAnswer.substr(i, 4));
             wait(250);
@@ -99,8 +105,7 @@ void deepvik::handleTileClicked()
         }
         if(generateMoves(gameState, COLOR).empty()){
             QMessageBox::about(this, "END", "You lost!");
-            changeCursor(false);
-            Freeze = true;
+            endGame();
             return;
         }
     }
@@ -137,7 +142,6 @@ void deepvik::handleTileClicked()
 
 void deepvik::on_newGameButton_clicked()
 {
-
     QDialog dialog(this);
     dialog.setWindowTitle("Select depth");
 
@@ -170,12 +174,13 @@ void deepvik::on_newGameButton_clicked()
     ui -> depthLabel -> setText(QString("DEPTH: %1").arg(DIFFICULTY));
     gameState.reset();
     refresh();
-    Freeze = false;
+    ui->evalBar->setValue(300);
     legalMoves.clear();
     userInput = "";
 
     if(COLOR){
-        string myBotAnswer = BestMove(gameState, DIFFICULTY, false);
+        auto [evalAnswer, myBotAnswer] = BestMove(gameState, DIFFICULTY, false);
+        ui -> evalBar -> setValue(clamp(evalAnswer * 3 + 300, 0, 600));
         for(int i = 0; i < (int)myBotAnswer.size() - 2; i += 2){
             make_move_from_string(gameState, myBotAnswer.substr(i, 4));
             wait(250);
@@ -190,10 +195,12 @@ void deepvik::on_newGameButton_clicked()
             return;
         }
     }
+
     changeCursor(true);
     ui -> newGameButton -> setVisible(false);
     ui -> selectColorButton -> setVisible(false);
     ui -> surrenderButton -> setVisible(true);
+    Freeze = false;
 }
 array<int, 32> getBoard(const Game &curr){
     array<int, 32> res;
@@ -221,20 +228,13 @@ void deepvik::refresh(){
 
 void deepvik::on_selectColorButton_clicked()
 {
-    QMessageBox msgBox;
-    msgBox.setWindowTitle("Choose color");
-    msgBox.setText("Choose color which you want to play:");
-    QPushButton* whiteButton = msgBox.addButton("White", QMessageBox::AcceptRole);
-    QPushButton* blackButton = msgBox.addButton("Black", QMessageBox::RejectRole);
-
-    msgBox.exec();
-
-    if (msgBox.clickedButton() == whiteButton) {
-        COLOR = false;
-    } else if (msgBox.clickedButton() == blackButton) {
-        COLOR = true;
+    QStringList colors = { "White", "Black" };
+    bool ok;
+    QString selected = QInputDialog::getItem(this, "Choose color", "Choose color:", colors, COLOR ? 1 : 0, false, &ok);
+    if (ok) {
+        COLOR = (selected == "Black");
+        ui->ColorLabel->setText(QString("Your color: %1").arg(COLOR ? "black" : "white"));
     }
-    ui->ColorLabel->setText(QString("Your color: %1").arg(COLOR ? "black" : "white"));
 }
 
 
@@ -246,16 +246,49 @@ void deepvik::on_rotateButton_clicked()
         blackTiles[i]->move(pos2);
         blackTiles[31 - i]->move(pos1);
     }
+    INVERTED = !INVERTED;
+    ui -> evalBar -> setValue(600 - ui -> evalBar -> value());
+    if (INVERTED) {
+        ui->evalBar->setStyleSheet(R"(
+            QProgressBar {
+                background-color: #f1d6b8;
+                border: none;
+                color: rgb(85, 170, 255);
+                font-size: 16pt;
+                font-weight: bold;
+                text-align: center;
+            }
+            QProgressBar::chunk {
+                background-color: #2a1a1a;
+            }
+        )");
+    } else {
+        ui->evalBar->setStyleSheet(R"(
+            QProgressBar {
+                background-color: #2a1a1a;
+                border: none;
+                color: rgb(85, 170, 255);
+                font-size: 16pt;
+                font-weight: bold;
+                text-align: center;
+            }
+            QProgressBar::chunk {
+                background-color: #f1d6b8;
+            }
+        )");
+    }
 }
-
-
-void deepvik::on_surrenderButton_clicked()
-{
+void deepvik::endGame(){
     Freeze = true;
-    QMessageBox::about(this, "END", "You lost!");
     ui -> newGameButton -> setVisible(true);
     ui -> selectColorButton -> setVisible(true);
     ui -> surrenderButton -> setVisible(false);
     changeCursor(false);
+}
+
+void deepvik::on_surrenderButton_clicked()
+{
+    endGame();
+    QMessageBox::about(this, "END", "You lost!");
 }
 

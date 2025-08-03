@@ -85,7 +85,7 @@ extern uint16_t timeCount;
 extern uint16_t killerMove[60][2];
 
 string move_recovery(const Game &state, bool my_color);
-string BestMove(Game &state, int depthLimit, bool my_color);
+pair<int, string> BestMove(Game &state, int depthLimit, bool my_color);
 void update_board(Game &state, vector<string> &board);
 template<bool Tura> int16_t dfs(const Game &state, uint8_t depth, int16_t alpha, int16_t beta);
 template<bool Tura, bool King> int16_t dfs_pom(const Game &state, uint8_t depth, uint32_t nr, int16_t alpha, int16_t beta);

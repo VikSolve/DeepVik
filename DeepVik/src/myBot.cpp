@@ -53,10 +53,11 @@ string move_recovery(const Game &state, bool my_color){
     return res;
 }
 
-string BestMove(Game &state, int depthLimit, bool my_color){
+pair<int, string> BestMove(Game &state, int depthLimit, bool my_color){
     t0 = getRTime();
     string answer = "";
     stop_iterating = false;
+    int bestEval = 0;
     for(int32_t i = 0; i < 58; i++){
         killerMove[i][0] = killerMove[i + 2][0];
         killerMove[i][1] = killerMove[i + 2][1];
@@ -68,14 +69,16 @@ string BestMove(Game &state, int depthLimit, bool my_color){
         best_result = (my_color) ? 10001 : -10001;
         MAX_DEPTH = i;
         Game temp = state;
-        if(!my_color) dfs<false>(temp, 0, -10001, 10001);
-        else dfs<true>(temp, 0, -10001, 10001);
+        int tempEval;
+        if(!my_color) tempEval = dfs<false>(temp, 0, -10001, 10001);
+        else tempEval = dfs<true>(temp, 0, -10001, 10001);
         if(stop_iterating) break;
         uint64_t ms = (getRTime() - t0)/1000;
         cerr<<i<<": ms "<<ms<<"\n";
         answer = move_recovery(state, my_color);
+        bestEval = tempEval;
     }
-    return answer;
+    return {bestEval, answer};
 }
 
 void update_board(Game &state, vector<string> &board){
