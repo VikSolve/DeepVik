@@ -7,20 +7,26 @@ deepvik::deepvik(QWidget *parent)
 {
     ui->setupUi(this);
     for (int i = 0; i < 32; ++i) {
-        QString name = QString("tile%1").arg(i);
-        tiles[i] = findChild<QPushButton*>(name);
-        connect(tiles[i], &QPushButton::clicked, this, &deepvik::handleTileClicked);
-        tiles[i] -> setIcon(QIcon(QString(":/img/B.png")));
-        tiles[i] -> setIconSize(QSize(80, 80));
+        QString name = QString("blackTile%1").arg(i);
+        blackTiles[i] = findChild<QPushButton*>(name);
+        connect(blackTiles[i], &QPushButton::clicked, this, &deepvik::handleTileClicked);
+        blackTiles[i] -> setIcon(QIcon(QString(":/img/B.png")));
+        blackTiles[i] -> setIconSize(QSize(80, 80));
 
-        name = QString("whiteTile%1").arg(i + 1);
-        QPushButton *whiteTile = findChild<QPushButton*>(name);
-        whiteTile -> setIcon(QIcon(QString(":/img/W.png")));
-        whiteTile -> setIconSize(QSize(80, 80));
+        name = QString("whiteTile%1").arg(i);
+        whiteTiles[i] = findChild<QPushButton*>(name);
+        whiteTiles[i] -> setIcon(QIcon(QString(":/img/W.png")));
+        whiteTiles[i] -> setIconSize(QSize(80, 80));
     }
     Freeze = true;
+    COLOR = false;
     gameType = 0;
     userInput = "";
+    ui -> surrenderButton -> setVisible(false);
+    ui -> newGameButton -> setCursor(Qt::PointingHandCursor);
+    ui -> surrenderButton -> setCursor(Qt::PointingHandCursor);
+    ui -> rotateButton -> setCursor(Qt::PointingHandCursor);
+    ui -> selectColorButton -> setCursor(Qt::PointingHandCursor);
 }
 
 deepvik::~deepvik()
@@ -42,25 +48,28 @@ int numToTile(string x){
     int res = ((x[1] - '1') * 4) + ((x[0] - 'A') >> 1);
     return res;
 }
+void deepvik::changeCursor(bool type){
+    for(uint32_t i = 0; i < 32; i++){
+        if(type == 0) blackTiles[i] -> setCursor(Qt::ArrowCursor);
+        else blackTiles[i] -> setCursor(Qt::PointingHandCursor);
+    }
+}
 void deepvik::handleTileClicked()
 {
     if(Freeze) return;
     QPushButton* clicked = qobject_cast<QPushButton*>(sender());
     if (!clicked) return;
     Freeze = true;
-    for(uint32_t i = 0; i < 32; i++){
-        tiles[i] -> setCursor(Qt::ArrowCursor);
-    }
+    changeCursor(false);
     int idx = 0;
     for (int i = 0; i < 32; i++) {
-        if (tiles[i] == clicked) {
+        if (blackTiles[i] == clicked) {
             idx = i;
             userInput += translateTile(i);
             break;
         }
     }
-    if(legalMoves.empty()) legalMoves = generateMoves(gameState, false);
-    qDebug() << userInput << "\n";
+    if(legalMoves.empty()) legalMoves = generateMoves(gameState, COLOR);
     bool correctFullMove = false;
     for(auto v : legalMoves){
         if(userInput == v){
@@ -73,22 +82,24 @@ void deepvik::handleTileClicked()
         legalMoves.clear();
         userInput = "";
         refresh();
-        if(generateMoves(gameState, true).empty()){
+        if(generateMoves(gameState, !COLOR).empty()){
             QMessageBox::about(this, "END", "You won!");
+            changeCursor(false);
             Freeze = true;
             return;
         }
-        string myBotAnswer = BestMove(gameState, DIFFICULTY, true);
+        string myBotAnswer = BestMove(gameState, DIFFICULTY, !COLOR);
         for(int i = 0; i < (int)myBotAnswer.size() - 2; i += 2){
             make_move_from_string(gameState, myBotAnswer.substr(i, 4));
             wait(250);
             refresh();
             int nr = numToTile(myBotAnswer.substr(i + 2, 2));
-            tiles[nr] -> setStyleSheet("border: 3px solid blue;");
-            tiles[nr] -> setIconSize(QSize(77, 77));
+            blackTiles[nr] -> setStyleSheet("border: 3px solid blue;");
+            blackTiles[nr] -> setIconSize(QSize(77, 77));
         }
-        if(generateMoves(gameState, false).empty()){
+        if(generateMoves(gameState, COLOR).empty()){
             QMessageBox::about(this, "END", "You lost!");
+            changeCursor(false);
             Freeze = true;
             return;
         }
@@ -106,8 +117,8 @@ void deepvik::handleTileClicked()
                 make_move_from_string(gameState, userInput.substr(userInput.size() - 4, 4));
                 refresh();
             }
-            tiles[idx]->setStyleSheet("border: 3px solid yellow;");
-            tiles[idx] -> setIconSize(QSize(77, 77));
+            blackTiles[idx]->setStyleSheet("border: 3px solid yellow;");
+            blackTiles[idx] -> setIconSize(QSize(77, 77));
         }
         else{
             if(userInput.size() >= 6) userInput.resize(userInput.size() - 2);
@@ -121,10 +132,7 @@ void deepvik::handleTileClicked()
 
 
     Freeze = false;
-    for(uint32_t i = 0; i < 32; i++){
-        tiles[i] -> setCursor(Qt::PointingHandCursor);
-    }
-
+    changeCursor(true);
 }
 
 void deepvik::on_newGameButton_clicked()
@@ -159,15 +167,33 @@ void deepvik::on_newGameButton_clicked()
     }
     DIFFICULTY = slider.value();
     if(DIFFICULTY == 11) DIFFICULTY = 60;
-    ui->label->setText(QString("DEPTH: %1").arg(DIFFICULTY));
+    ui -> depthLabel -> setText(QString("DEPTH: %1").arg(DIFFICULTY));
     gameState.reset();
     refresh();
     Freeze = false;
     legalMoves.clear();
     userInput = "";
-    for(uint32_t i = 0; i < 32; i++){
-        tiles[i] -> setCursor(Qt::PointingHandCursor);
+
+    if(COLOR){
+        string myBotAnswer = BestMove(gameState, DIFFICULTY, false);
+        for(int i = 0; i < (int)myBotAnswer.size() - 2; i += 2){
+            make_move_from_string(gameState, myBotAnswer.substr(i, 4));
+            wait(250);
+            refresh();
+            int nr = numToTile(myBotAnswer.substr(i + 2, 2));
+            blackTiles[nr] -> setStyleSheet("border: 3px solid blue;");
+            blackTiles[nr] -> setIconSize(QSize(77, 77));
+        }
+        if(generateMoves(gameState, true).empty()){
+            QMessageBox::about(this, "END", "You lost!");
+            Freeze = true;
+            return;
+        }
     }
+    changeCursor(true);
+    ui -> newGameButton -> setVisible(false);
+    ui -> selectColorButton -> setVisible(false);
+    ui -> surrenderButton -> setVisible(true);
 }
 array<int, 32> getBoard(const Game &curr){
     array<int, 32> res;
@@ -183,12 +209,53 @@ array<int, 32> getBoard(const Game &curr){
 void deepvik::refresh(){
     array<int, 32> board = getBoard(gameState);
     for(int i = 0; i < 32; i++){
-        if(board[i] == 0) tiles[i] -> setIcon(QIcon(QString(":/img/B.png")));
-        else if(board[i] == 1) tiles[i] -> setIcon(QIcon(QString(":/img/piece_W.png")));
-        else if(board[i] == 2) tiles[i] -> setIcon(QIcon(QString(":/img/piece_B.png")));
-        else if(board[i] == 3) tiles[i] -> setIcon(QIcon(QString(":/img/king_W.png")));
-        else tiles[i] -> setIcon(QIcon(QString(":/img/king_B.png")));
-        tiles[i] -> setIconSize(QSize(80, 80));
+        if(board[i] == 0) blackTiles[i] -> setIcon(QIcon(QString(":/img/B.png")));
+        else if(board[i] == 1) blackTiles[i] -> setIcon(QIcon(QString(":/img/piece_W.png")));
+        else if(board[i] == 2) blackTiles[i] -> setIcon(QIcon(QString(":/img/piece_B.png")));
+        else if(board[i] == 3) blackTiles[i] -> setIcon(QIcon(QString(":/img/king_W.png")));
+        else blackTiles[i] -> setIcon(QIcon(QString(":/img/king_B.png")));
+        blackTiles[i] -> setIconSize(QSize(80, 80));
     }
+}
+
+
+void deepvik::on_selectColorButton_clicked()
+{
+    QMessageBox msgBox;
+    msgBox.setWindowTitle("Choose color");
+    msgBox.setText("Choose color which you want to play:");
+    QPushButton* whiteButton = msgBox.addButton("White", QMessageBox::AcceptRole);
+    QPushButton* blackButton = msgBox.addButton("Black", QMessageBox::RejectRole);
+
+    msgBox.exec();
+
+    if (msgBox.clickedButton() == whiteButton) {
+        COLOR = false;
+    } else if (msgBox.clickedButton() == blackButton) {
+        COLOR = true;
+    }
+    ui->ColorLabel->setText(QString("Your color: %1").arg(COLOR ? "black" : "white"));
+}
+
+
+void deepvik::on_rotateButton_clicked()
+{
+    for (int i = 0; i < 16; ++i) {
+        QPoint pos1 = blackTiles[i]->pos();
+        QPoint pos2 = blackTiles[31 - i]->pos();
+        blackTiles[i]->move(pos2);
+        blackTiles[31 - i]->move(pos1);
+    }
+}
+
+
+void deepvik::on_surrenderButton_clicked()
+{
+    Freeze = true;
+    QMessageBox::about(this, "END", "You lost!");
+    ui -> newGameButton -> setVisible(true);
+    ui -> selectColorButton -> setVisible(true);
+    ui -> surrenderButton -> setVisible(false);
+    changeCursor(false);
 }
 

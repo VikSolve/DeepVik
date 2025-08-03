@@ -30,14 +30,23 @@ public:
 private slots:
     void on_newGameButton_clicked();
 
+    void on_selectColorButton_clicked();
+
+    void on_rotateButton_clicked();
+
+    void on_surrenderButton_clicked();
+
 private:
     void handleTileClicked();
     void refresh();
-    QPushButton* tiles[32];
+    void changeCursor(bool type);
+    QPushButton* blackTiles[32];
+    QPushButton* whiteTiles[32];
     Ui::deepvik *ui;
     bool Freeze;
     int gameType;
     int DIFFICULTY;
+    bool COLOR;
     string userInput;
     Game gameState;
     vector<string> legalMoves;
