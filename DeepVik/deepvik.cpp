@@ -232,7 +232,11 @@ void deepvik::on_selectColorButton_clicked()
     bool ok;
     QString selected = QInputDialog::getItem(this, "Choose color", "Choose color:", colors, COLOR ? 1 : 0, false, &ok);
     if (ok) {
-        COLOR = (selected == "Black");
+        bool tempColor = (selected == "Black");
+        if(COLOR != tempColor){
+            ui -> evalBar -> setValue(600 - ui -> evalBar -> value());
+            COLOR = tempColor;
+        }
         ui->ColorLabel->setText(QString("Your color: %1").arg(COLOR ? "black" : "white"));
     }
 }
@@ -247,7 +251,6 @@ void deepvik::on_rotateButton_clicked()
         blackTiles[31 - i]->move(pos1);
     }
     INVERTED = !INVERTED;
-    ui -> evalBar -> setValue(600 - ui -> evalBar -> value());
     if (INVERTED) {
         ui->evalBar->setStyleSheet(R"(
             QProgressBar {
