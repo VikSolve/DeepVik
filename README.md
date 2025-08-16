@@ -44,8 +44,14 @@ I've created a simple desktop application that allows you to play directly again
 
 **How to Launch:**
 * 🖥️ **Windows**: Navigate to the `WinApp` folder and run `DeepVikApp.exe`. That's it!
-* 🐧 **Linux / macOS**: Open a terminal in the project's root directory and run the command: `bash build.sh`.
+* 🐧 **Linux / macOS**: 
+    1.  **Install Dependencies:** Before building, ensure you have the necessary build tools and Qt5 development libraries. For Debian/Ubuntu-based systems, these are typically `g++`, `make`, `qt5-qmake`, `qtbase5-dev`, and `qtchooser`.
+        *(Note: For other distributions or for macOS, the package names might differ slightly.)*
 
+    2.  **Build and Run:** Open a terminal in the project's root directory and run the command:
+        ```bash
+        bash build.sh
+        ```
 ### 2. Challenge Your Own Bot on CodinGame!
 
 If you're developing your own draughts bot, you can benchmark it against DeepVik directly in the CodinGame arena. It's the best way to test its strength!
