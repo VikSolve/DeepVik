@@ -11,6 +11,8 @@
 #include <QDialog>
 #include <QVBoxLayout>
 #include <QInputDialog>
+#include <QDesktopServices>
+#include <QUrl>
 #include "src/myBot.h"
 #include "src/moveGenerator.h"
 
@@ -37,6 +39,13 @@ private slots:
 
     void on_surrenderButton_clicked();
 
+    void on_changeDepthButton_clicked();
+
+    void on_actionCreator_triggered();
+
+    void on_actionRules_triggered();
+
+
 private:
     void handleTileClicked();
     void refresh();
@@ -50,8 +59,8 @@ private:
     int DIFFICULTY;
     bool COLOR;
     bool INVERTED;
-    string userInput;
+    std::string userInput;
     Game gameState;
-    vector<string> legalMoves;
+    std::vector<std::string> legalMoves;
 };
 #endif // DEEPVIK_H

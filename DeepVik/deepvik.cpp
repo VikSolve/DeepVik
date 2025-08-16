@@ -27,12 +27,13 @@ deepvik::deepvik(QWidget *parent)
     ui -> surrenderButton -> setCursor(Qt::PointingHandCursor);
     ui -> rotateButton -> setCursor(Qt::PointingHandCursor);
     ui -> selectColorButton -> setCursor(Qt::PointingHandCursor);
-
     ui -> evalBar -> setOrientation(Qt::Vertical);
     ui->evalBar->setRange(0, 600);
     ui->evalBar->setValue(300);
     ui->evalBar->setAlignment(Qt::AlignCenter);
+    ui->evalBar->setTextVisible(false);
     INVERTED = false;
+    DIFFICULTY = 60;
 }
 
 deepvik::~deepvik()
@@ -44,13 +45,13 @@ void wait(int milliseconds) {
     QTimer::singleShot(milliseconds, &loop, &QEventLoop::quit);
     loop.exec();
 }
-string translateTile(int tile){
-    string res = "";
+std::string translateTile(int tile){
+    std::string res = "";
     res += ('A' + ((tile & 3) << 1) + ((tile >> 2) & 1));
     res += ('1' + (tile >> 2));
     return res;
 }
-int numToTile(string x){
+int numToTile(std::string x){
     int res = ((x[1] - '1') * 4) + ((x[0] - 'A') >> 1);
     return res;
 }
@@ -88,13 +89,16 @@ void deepvik::handleTileClicked()
         legalMoves.clear();
         userInput = "";
         refresh();
+        wait(1);
         if(generateMoves(gameState, !COLOR).empty()){
             QMessageBox::about(this, "END", "You won!");
             endGame();
             return;
         }
         auto [evalAnswer, myBotAnswer] = BestMove(gameState, DIFFICULTY, !COLOR);
-        ui -> evalBar -> setValue(clamp(evalAnswer * 3 + 300, 0, 600));
+        int evalBarPoints = std::clamp(evalAnswer * 3 + 300, 0, 600);
+        if(INVERTED) evalBarPoints = 600 - evalBarPoints;
+        ui -> evalBar -> setValue(evalBarPoints);
         for(int i = 0; i < (int)myBotAnswer.size() - 2; i += 2){
             make_move_from_string(gameState, myBotAnswer.substr(i, 4));
             wait(250);
@@ -142,36 +146,6 @@ void deepvik::handleTileClicked()
 
 void deepvik::on_newGameButton_clicked()
 {
-    QDialog dialog(this);
-    dialog.setWindowTitle("Select depth");
-
-    QVBoxLayout layout(&dialog);
-
-    QSlider slider(Qt::Horizontal);
-    slider.setRange(1, 11);
-    slider.setValue(1);
-
-    QLabel label("Depth: 1");
-    label.setAlignment(Qt::AlignCenter);
-
-    layout.addWidget(&slider);
-    layout.addWidget(&label);
-
-    QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dialog);
-    layout.addWidget(&buttonBox);
-
-    QObject::connect(&slider, &QSlider::valueChanged, [&label](int v){
-        label.setText(v == 11 ? "Depth: Unlimited" : QString("Depth: %1").arg(v));
-    });
-    QObject::connect(&buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
-    QObject::connect(&buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
-
-    if(dialog.exec() != QDialog::Accepted) {
-        return;
-    }
-    DIFFICULTY = slider.value();
-    if(DIFFICULTY == 11) DIFFICULTY = 60;
-    ui -> depthLabel -> setText(QString("DEPTH: %1").arg(DIFFICULTY));
     gameState.reset();
     refresh();
     ui->evalBar->setValue(300);
@@ -180,7 +154,7 @@ void deepvik::on_newGameButton_clicked()
 
     if(COLOR){
         auto [evalAnswer, myBotAnswer] = BestMove(gameState, DIFFICULTY, false);
-        ui -> evalBar -> setValue(clamp(evalAnswer * 3 + 300, 0, 600));
+        ui -> evalBar -> setValue(std::clamp(evalAnswer * 3 + 300, 0, 600));
         for(int i = 0; i < (int)myBotAnswer.size() - 2; i += 2){
             make_move_from_string(gameState, myBotAnswer.substr(i, 4));
             wait(250);
@@ -200,10 +174,11 @@ void deepvik::on_newGameButton_clicked()
     ui -> newGameButton -> setVisible(false);
     ui -> selectColorButton -> setVisible(false);
     ui -> surrenderButton -> setVisible(true);
+    ui -> changeDepthButton -> setVisible(false);
     Freeze = false;
 }
-array<int, 32> getBoard(const Game &curr){
-    array<int, 32> res;
+std::array<int, 32> getBoard(const Game &curr){
+    std::array<int, 32> res;
     for(uint32_t i = 0; i < 32; i++){
         if(curr.black_pawn & (1 << i)) res[i] = 1;
         else if(curr.red_pawn & (1 << i)) res[i] = 2;
@@ -214,7 +189,7 @@ array<int, 32> getBoard(const Game &curr){
     return res;
 }
 void deepvik::refresh(){
-    array<int, 32> board = getBoard(gameState);
+    std::array<int, 32> board = getBoard(gameState);
     for(int i = 0; i < 32; i++){
         if(board[i] == 0) blackTiles[i] -> setIcon(QIcon(QString(":/img/B.png")));
         else if(board[i] == 1) blackTiles[i] -> setIcon(QIcon(QString(":/img/piece_W.png")));
@@ -233,11 +208,8 @@ void deepvik::on_selectColorButton_clicked()
     QString selected = QInputDialog::getItem(this, "Choose color", "Choose color:", colors, COLOR ? 1 : 0, false, &ok);
     if (ok) {
         bool tempColor = (selected == "Black");
-        if(COLOR != tempColor){
-            ui -> evalBar -> setValue(600 - ui -> evalBar -> value());
-            COLOR = tempColor;
-        }
-        ui->ColorLabel->setText(QString("Your color: %1").arg(COLOR ? "black" : "white"));
+        COLOR = tempColor;
+        ui->ColorLabel->setText(QString("Your Color: %1").arg(COLOR ? "black" : "white"));
     }
 }
 
@@ -250,6 +222,7 @@ void deepvik::on_rotateButton_clicked()
         blackTiles[i]->move(pos2);
         blackTiles[31 - i]->move(pos1);
     }
+    ui -> evalBar -> setValue(600 - ui -> evalBar -> value());
     INVERTED = !INVERTED;
     if (INVERTED) {
         ui->evalBar->setStyleSheet(R"(
@@ -286,6 +259,7 @@ void deepvik::endGame(){
     ui -> newGameButton -> setVisible(true);
     ui -> selectColorButton -> setVisible(true);
     ui -> surrenderButton -> setVisible(false);
+    ui -> changeDepthButton -> setVisible(true);
     changeCursor(false);
 }
 
@@ -293,5 +267,47 @@ void deepvik::on_surrenderButton_clicked()
 {
     endGame();
     QMessageBox::about(this, "END", "You lost!");
+}
+
+
+void deepvik::on_changeDepthButton_clicked()
+{
+    QDialog dialog(this);
+    dialog.setWindowTitle("Select depth");
+
+    QVBoxLayout layout(&dialog);
+
+    QSlider slider(Qt::Horizontal);
+    slider.setRange(1, 11);
+    slider.setValue(1);
+
+    QLabel label("Depth: 1");
+    label.setAlignment(Qt::AlignCenter);
+
+    layout.addWidget(&slider);
+    layout.addWidget(&label);
+
+    QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dialog);
+    layout.addWidget(&buttonBox);
+
+    QObject::connect(&slider, &QSlider::valueChanged, [&label](int v){
+        label.setText(v == 11 ? "Depth: Unlimited" : QString("Depth: %1").arg(v));
+    });
+    QObject::connect(&buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    QObject::connect(&buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+
+    if(dialog.exec() != QDialog::Accepted) {
+        return;
+    }
+    DIFFICULTY = slider.value();
+    if(DIFFICULTY == 11) DIFFICULTY = 60;
+    ui -> depthLabel -> setText(QString("Bot Depth: %1").arg(DIFFICULTY));
+}
+
+void deepvik::on_actionCreator_triggered(){
+    QDesktopServices::openUrl(QUrl("https://www.viksolve.pl/"));
+}
+void deepvik::on_actionRules_triggered(){
+    QDesktopServices::openUrl(QUrl("https://en.wikipedia.org/wiki/English_draughts"));
 }
 

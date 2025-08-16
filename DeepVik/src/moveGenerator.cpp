@@ -1,5 +1,3 @@
-#include <bits/stdc++.h>
-#include <sys/time.h>
 #include "moveGenerator.h"
 #define INLINE __attribute__((always_inline))inline
 #define NOINLINE __attribute__((noinline))
@@ -7,17 +5,16 @@
 #define UNLIKELY(x) (__builtin_expect(!!(x), 0))
 #define ABS(x) ((x) < 0 ? -(x) : (x))
 
-using namespace std;
 
-string translate(uint32_t x){
-	string res = "";
+std::string translate(uint32_t x){
+    std::string res = "";
 	res += ('A' + ((x & 3) << 1) + ((x >> 2) & 1));
 	res += ('1' + (x >> 2));
 	return res;
 }
 
-vector<string> cap(Game state, bool tura, uint32_t nr, bool king){
-	vector<string> res;
+std::vector<std::string> cap(Game state, bool tura, uint32_t nr, bool king){
+    std::vector<std::string> res;
 	Game temp = state;
 	bool mv = true;
 	uint32_t red = temp.red_pawn | temp.red_king;
@@ -34,7 +31,7 @@ vector<string> cap(Game state, bool tura, uint32_t nr, bool king){
 			if(temp.black_pawn & pm){
 				if(pm & attack_left){
 					temp.black_pawn_attack(nr, nr + 7u);
-					vector<string> pod = cap(temp, tura, nr + 7, false);
+                    std::vector<std::string> pod = cap(temp, tura, nr + 7, false);
 					for(auto v : pod){
 						res.push_back(v);
 					}
@@ -43,7 +40,7 @@ vector<string> cap(Game state, bool tura, uint32_t nr, bool king){
 				}
 				if(pm & attack_right){
 					temp.black_pawn_attack(nr, nr + 9u);
-					vector<string> pod = cap(temp, tura, nr + 9, false);
+                    std::vector<std::string> pod = cap(temp, tura, nr + 9, false);
 					for(auto v : pod){
 						res.push_back(v);
 					}
@@ -55,7 +52,7 @@ vector<string> cap(Game state, bool tura, uint32_t nr, bool king){
 		else{
 			if(pm & attack_left){
 				temp.black_king_attack(nr, nr + 7u);
-				vector<string> pod = cap(temp, tura, nr + 7u, true);
+                std::vector<std::string> pod = cap(temp, tura, nr + 7u, true);
 				for(auto v : pod){
 					res.push_back(v);
 				}
@@ -64,7 +61,7 @@ vector<string> cap(Game state, bool tura, uint32_t nr, bool king){
 			}
 			if(pm & attack_right){
 				temp.black_king_attack(nr, nr + 9u);
-				vector<string> pod = cap(temp, tura, nr + 9u, true);
+                std::vector<std::string> pod = cap(temp, tura, nr + 9u, true);
 				for(auto v : pod){
 					res.push_back(v);
 				}
@@ -73,7 +70,7 @@ vector<string> cap(Game state, bool tura, uint32_t nr, bool king){
 			}
 			if(pm & attack_back_left){
 				temp.black_king_attack(nr, nr - 9u);
-				vector<string> pod = cap(temp, tura, nr - 9, true);
+                std::vector<std::string> pod = cap(temp, tura, nr - 9, true);
 				for(auto v : pod){
 					res.push_back(v);
 				}
@@ -82,7 +79,7 @@ vector<string> cap(Game state, bool tura, uint32_t nr, bool king){
 			}
 			if(pm & attack_back_right){
 				temp.black_king_attack(nr, nr - 7u);
-				vector<string> pod = cap(temp, tura, nr - 7, true);
+                std::vector<std::string> pod = cap(temp, tura, nr - 7, true);
 				for(auto v : pod){
 					res.push_back(v);
 				}
@@ -107,7 +104,7 @@ vector<string> cap(Game state, bool tura, uint32_t nr, bool king){
 			if(temp.red_pawn & pm){
 				if(pm & attack_left){
 					temp.red_pawn_attack(nr, nr - 9u);
-					vector<string> pod = cap(temp, tura, nr - 9, false);
+                    std::vector<std::string> pod = cap(temp, tura, nr - 9, false);
 					for(auto v : pod){
 						res.push_back(v);
 					}
@@ -116,7 +113,7 @@ vector<string> cap(Game state, bool tura, uint32_t nr, bool king){
 				}
 				if(pm & attack_right){
 					temp.red_pawn_attack(nr, nr - 7u);
-					vector<string> pod = cap(temp, tura, nr - 7, false);
+                    std::vector<std::string> pod = cap(temp, tura, nr - 7, false);
 					for(auto v : pod){
 						res.push_back(v);
 					}
@@ -128,7 +125,7 @@ vector<string> cap(Game state, bool tura, uint32_t nr, bool king){
 		else{
 			if(pm & attack_left){
 				temp.red_king_attack(nr, nr - 9u);
-				vector<string> pod = cap(temp, tura, nr - 9, true);
+                std::vector<std::string> pod = cap(temp, tura, nr - 9, true);
 				for(auto v : pod){
 					res.push_back(v);
 				}
@@ -137,7 +134,7 @@ vector<string> cap(Game state, bool tura, uint32_t nr, bool king){
 			}
 			if(pm & attack_right){
 				temp.red_king_attack(nr, nr - 7u);
-				vector<string> pod = cap(temp, tura, nr - 7, true);
+                std::vector<std::string> pod = cap(temp, tura, nr - 7, true);
 				for(auto v : pod){
 					res.push_back(v);
 				}
@@ -146,7 +143,7 @@ vector<string> cap(Game state, bool tura, uint32_t nr, bool king){
 			}
 			if(pm & attack_back_left){
 				temp.red_king_attack(nr, nr + 7u);
-				vector<string> pod = cap(temp, tura, nr + 7, true);
+                std::vector<std::string> pod = cap(temp, tura, nr + 7, true);
 				for(auto v : pod){
 					res.push_back(v);
 				}
@@ -155,7 +152,7 @@ vector<string> cap(Game state, bool tura, uint32_t nr, bool king){
 			}
 			if(pm & attack_back_right){
 				temp.red_king_attack(nr, nr + 9u);
-				vector<string> pod = cap(temp, tura, nr + 9, true);
+                std::vector<std::string> pod = cap(temp, tura, nr + 9, true);
 				for(auto v : pod){
 					res.push_back(v);
 				}
@@ -172,8 +169,8 @@ vector<string> cap(Game state, bool tura, uint32_t nr, bool king){
 		return res;
 	}
 }
-vector<string> generateMoves(Game state, bool tura){
-	vector<string> res;
+std::vector<std::string> generateMoves(Game state, bool tura){
+    std::vector<std::string> res;
 	Game temp = state;
 	uint32_t red = temp.red_king | temp.red_pawn;
 	uint32_t black = temp.black_king | temp.black_pawn;
@@ -191,7 +188,7 @@ vector<string> generateMoves(Game state, bool tura){
 				uint32_t mp = 1u << i;
 				if(mp & attack_left){
 					temp.black_pawn_attack(i, i + 7);
-					vector<string> pod = cap(temp, tura, i + 7, false);
+                    std::vector<std::string> pod = cap(temp, tura, i + 7, false);
 					for(auto v : pod){
 						res.push_back(translate(i) + v);
 					}
@@ -199,7 +196,7 @@ vector<string> generateMoves(Game state, bool tura){
 				}
 				if(mp & attack_right){
 					temp.black_pawn_attack(i, i + 9u);
-					vector<string> pod = cap(temp, tura, i + 9, false);
+                    std::vector<std::string> pod = cap(temp, tura, i + 9, false);
 					for(auto v : pod){
 						res.push_back(translate(i) + v);
 					}
@@ -213,7 +210,7 @@ vector<string> generateMoves(Game state, bool tura){
 				uint32_t mp = 1u << i;
 				if(mp & attack_left){
 					temp.black_king_attack(i, i + 7u);
-					vector<string> pod = cap(temp, tura, i + 7, true);
+                    std::vector<std::string> pod = cap(temp, tura, i + 7, true);
 					for(auto v : pod){
 						res.push_back(translate(i) + v);
 					}
@@ -221,7 +218,7 @@ vector<string> generateMoves(Game state, bool tura){
 				}
 				if(mp & attack_right){
 					temp.black_king_attack(i, i + 9u);
-					vector<string> pod = cap(temp, tura, i + 9, true);
+                    std::vector<std::string> pod = cap(temp, tura, i + 9, true);
 					for(auto v : pod){
 						res.push_back(translate(i) + v);
 					}
@@ -229,7 +226,7 @@ vector<string> generateMoves(Game state, bool tura){
 				}
 				if(mp & attack_back_left){
 					temp.black_king_attack(i, i - 9u);
-					vector<string> pod = cap(temp, tura, i - 9, true);
+                    std::vector<std::string> pod = cap(temp, tura, i - 9, true);
 					for(auto v : pod){
 						res.push_back(translate(i) + v);
 					}
@@ -237,8 +234,8 @@ vector<string> generateMoves(Game state, bool tura){
 				}
 				if(mp & attack_back_right){
 					temp.black_king_attack(i, i - 7u);
-					vector<string> pod = cap(temp, tura, i - 7, true);
-					for(auto v : pod){
+                    std::vector<std::string> pod = cap(temp, tura, i - 7, true);
+                    for(auto v : pod){
 						res.push_back(translate(i) + v);
 					}
 					temp = state;
@@ -299,7 +296,7 @@ vector<string> generateMoves(Game state, bool tura){
 				uint32_t mp = 1u << i;
 				if(mp & attack_left){
 					temp.red_pawn_attack(i, i - 9u);
-					vector<string> pod = cap(temp, tura, i - 9, false);
+                    std::vector<std::string> pod = cap(temp, tura, i - 9, false);
 					for(auto v : pod){
 						res.push_back(translate(i) + v);
 					}
@@ -307,7 +304,7 @@ vector<string> generateMoves(Game state, bool tura){
 				}
 				if(mp & attack_right){
 					temp.red_pawn_attack(i, i - 7u);
-					vector<string> pod = cap(temp, tura, i - 7, false);
+                    std::vector<std::string> pod = cap(temp, tura, i - 7, false);
 					for(auto v : pod){
 						res.push_back(translate(i) + v);
 					}
@@ -321,7 +318,7 @@ vector<string> generateMoves(Game state, bool tura){
 				uint32_t mp = 1u << i;
 				if(mp & attack_left){
 					temp.red_king_attack(i, i - 9u);
-					vector<string> pod = cap(temp, tura, i - 9, true);
+                    std::vector<std::string> pod = cap(temp, tura, i - 9, true);
 					for(auto v : pod){
 						res.push_back(translate(i) + v);
 					}
@@ -329,7 +326,7 @@ vector<string> generateMoves(Game state, bool tura){
 				}
 				if(mp & attack_right){
 					temp.red_king_attack(i, i - 7u);
-					vector<string> pod = cap(temp, tura, i - 7, true);
+                    std::vector<std::string> pod = cap(temp, tura, i - 7, true);
 					for(auto v : pod){
 						res.push_back(translate(i) + v);
 					}
@@ -337,7 +334,7 @@ vector<string> generateMoves(Game state, bool tura){
 				}
 				if(mp & attack_back_left){
 					temp.red_king_attack(i, i + 7u);
-					vector<string> pod = cap(temp, tura, i + 7, true);
+                    std::vector<std::string> pod = cap(temp, tura, i + 7, true);
 					for(auto v : pod){
 						res.push_back(translate(i) + v);
 					}
@@ -345,7 +342,7 @@ vector<string> generateMoves(Game state, bool tura){
 				}
 				if(mp & attack_back_right){
 					temp.red_king_attack(i, i + 9u);
-					vector<string> pod = cap(temp, tura, i + 9, true);
+                    std::vector<std::string> pod = cap(temp, tura, i + 9, true);
 					for(auto v : pod){
 						res.push_back(translate(i) + v);
 					}

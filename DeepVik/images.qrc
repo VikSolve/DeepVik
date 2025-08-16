@@ -6,5 +6,6 @@
         <file>img/W.png</file>
         <file>img/king_B.png</file>
         <file>img/king_W.png</file>
+        <file>img/icon.png</file>
     </qresource>
 </RCC>

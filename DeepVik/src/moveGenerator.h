@@ -4,8 +4,7 @@
 #pragma GCC target("popcnt")
 #include <bits/stdc++.h>
 #include "myBot.h"
-using namespace std;
-string translate(uint32_t x);
-vector<string> cap(Game state, bool tura, uint32_t nr, bool king);
-vector<string> generateMoves(Game state, bool tura);
+std::string translate(uint32_t x);
+std::vector<std::string> cap(Game state, bool tura, uint32_t nr, bool king);
+std::vector<std::string> generateMoves(Game state, bool tura);
 #endif
