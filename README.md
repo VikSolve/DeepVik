@@ -43,7 +43,7 @@ I've created a simple desktop application that allows you to play directly again
 * **Evaluation Bar**: See a live analysis of who has the advantage according to the engine.
 
 **How to Launch:**
-* 🖥️ **Windows**: Navigate to the `WinApp` folder and run `DeepVik.exe`. That's it!
+* 🖥️ **Windows**: Navigate to the `WinApp` folder and run `DeepVikApp.exe`. That's it!
 * 🐧 **Linux / macOS**: Open a terminal in the project's root directory and run the command: `bash build.sh`.
 
 ### 2. Challenge Your Own Bot on CodinGame!

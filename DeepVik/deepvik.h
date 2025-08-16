@@ -9,6 +9,7 @@
 #include <QSlider>
 #include <QLabel>
 #include <QDialog>
+#include <QDialogButtonBox>
 #include <QVBoxLayout>
 #include <QInputDialog>
 #include <QDesktopServices>

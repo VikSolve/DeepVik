@@ -4,4 +4,4 @@ cd "$SCRIPT_DIR" || exit 1
 rm -rf "$SCRIPT_DIR/Makefile" "$SCRIPT_DIR/*.o" "$SCRIPT_DIR/*.pro.user" "$SCRIPT_DIR/*.pro.*"
 /usr/bin/qmake "$SCRIPT_DIR/DeepVik/DeepVik.pro" -o "$SCRIPT_DIR/Makefile"
 make
-./DeepVik
+./DeepVikApp

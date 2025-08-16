@@ -1,8 +1,6 @@
 #ifndef MYBOT_H
 #define MYBOT_H
 
-#pragma GCC optimize "Ofast,unroll-loops,omit-frame-pointer,inline"
-#pragma GCC target("popcnt")
 
 #include <bits/stdc++.h>
 #include <sys/time.h>
